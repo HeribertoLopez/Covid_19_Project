@@ -55,4 +55,14 @@ ggplot() +
   labs(title = "US Population",
        subtitle = "US Census Bureau 2019 Population Estimates",
        fill = "Population Grouping"
-  )
+  ) 
+
+# Attempt at Making a plot for cases per day 
+covid.dt  <- read_csv("C:/Users/hlop5/Downloads/owid-covid-data.csv") 
+
+head(covid.dt)
+
+dim(covid.dt) 
+
+names(covid.dt)
+
