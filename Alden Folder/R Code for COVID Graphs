@@ -1,0 +1,67 @@
+COVIDdata=read.csv("owid-covid-data.csv")
+COVIDdataUS=subset(COVIDdata,location == "United States")
+install.packages("tidyverse")
+library(tidyverse)
+
+CleanCOVIDdataUS = subset(COVIDdataUS, select = c(date, population, total_cases, people_vaccinated, total_deaths))
+CleanCOVIDdataUS[is.na(CleanCOVIDdataUS)] = 0
+CleanCOVIDdataUS$date = as.Date(CleanCOVIDdataUS$date, format = "%Y-%m-%d")
+USCOVID_Plot = ggplot(data = CleanCOVIDdataUS) +
+  geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
+  geom_line(mapping = aes(x = date, y = population, color = "Population")) +
+  geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
+  geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths")) +
+  xlab("Date") +
+  ylab("Number of People") +
+  ggtitle("COVID Pandemic in the US") + theme_bw() + labs(color = "") + theme(legend.position = "top")
+USCOVID_Plot
+
+COVIDdataGermany=subset(COVIDdata,location == "Germany")
+library(tidyverse)
+
+CleanCOVIDdataGermany = subset(COVIDdataGermany, select = c(date, population, total_cases, people_vaccinated, total_deaths))
+CleanCOVIDdataGermany[is.na(CleanCOVIDdataGermany)] = 0
+CleanCOVIDdataGermany$date = as.Date(CleanCOVIDdataGermany$date, format = "%Y-%m-%d")
+GermanyCOVID_Plot = ggplot(data = CleanCOVIDdataGermany) +
+  geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
+  geom_line(mapping = aes(x = date, y = population, color = "Population")) +
+  geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
+  geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths")) +
+  xlab("Date") +
+  ylab("Number of People") +
+  ggtitle("COVID Pandemic in Germany") + theme_bw() + labs(color = "") + theme(legend.position = "top")
+GermanyCOVID_Plot
+
+COVIDdataUK=subset(COVIDdata,location == "United Kingdom")
+library(tidyverse)
+
+CleanCOVIDdataUK = subset(COVIDdataUK, select = c(date, population, total_cases, people_vaccinated, total_deaths))
+CleanCOVIDdataUK[is.na(CleanCOVIDdataUK)] = 0
+CleanCOVIDdataUK$date = as.Date(CleanCOVIDdataUK$date, format = "%Y-%m-%d")
+UKCOVID_Plot = ggplot(data = CleanCOVIDdataUK) +
+  geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
+  geom_line(mapping = aes(x = date, y = population, color = "Population")) +
+  geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
+  geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths")) +
+  xlab("Date") +
+  ylab("Number of People") +
+  ggtitle("COVID Pandemic in the UK") + theme_bw() + labs(color = "") + theme(legend.position = "top")
+UKCOVID_Plot
+
+unique(COVIDdata$location)
+
+COVIDdataFrance=subset(COVIDdata,location == "France")
+library(tidyverse)
+
+CleanCOVIDdataFrance = subset(COVIDdataFrance, select = c(date, population, total_cases, people_vaccinated, total_deaths))
+CleanCOVIDdataFrance[is.na(CleanCOVIDdataFrance)] = 0
+CleanCOVIDdataFrance$date = as.Date(CleanCOVIDdataFrance$date, format = "%Y-%m-%d")
+FranceCOVID_Plot = ggplot(data = CleanCOVIDdataFrance) +
+  geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
+  geom_line(mapping = aes(x = date, y = population, color = "Population")) +
+  geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
+  geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths")) +
+  xlab("Date") +
+  ylab("Number of People") +
+  ggtitle("COVID Pandemic in France") + theme_bw() + labs(color = "") + theme(legend.position = "top")
+FranceCOVID_Plot
