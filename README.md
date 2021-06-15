@@ -8,3 +8,5 @@ Sources:
 library(tidycensus) #For population estimates 
 
 
+# List of What we need to know how to do for week of 6/14/21  
+
