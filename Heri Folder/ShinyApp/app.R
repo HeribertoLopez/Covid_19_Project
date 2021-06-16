@@ -10,7 +10,7 @@
 library(shiny)
 library(tidyverse)
 
-# Define UI for application that draws a histogram
+# Define UI for application t
 ui <- fluidPage(
     selectInput(inputId = "location",
                 label = "Choose a Country",
