@@ -1,6 +1,7 @@
 library(tidycensus)
 library(tidyverse)
 library(tigris)
+library(lubridate)
 options(tigris_use_cache=TRUE)
 
 census_api_key("8ce6395e8ec025d0c06764b840e7e5fe70221625", overwrite = TRUE, install=TRUE)
@@ -64,5 +65,73 @@ head(covid.dt)
 
 dim(covid.dt) 
 
+str(covid.dt)
+
 names(covid.dt)
+
+# selecting our varibales of interest 
+asia.covid.df <- covid.dt %>%  
+  select(iso_code, continent, location, date, new_deaths, total_deaths,
+         new_cases, total_cases, 
+         icu_patients, hosp_patients, 
+         new_tests, total_tests, 
+         new_vaccinations, total_vaccinations, population)
+
+# Editing the format of the data variable 
+asia.covid.df$date = as.Date(covid.dt$date, format = "%Y-%m-%d")
+
+# Filtering out the continent of Asia  
+asia.covid.df <- covid.dt %>%  
+  filter(continent == "Asia") 
+
+#Creating a month variable 
+asia.covid.df <- asia.covid.df %>%  
+  mutate(
+    month = month(date, label = T), 
+    wday = wday(date)
+  ) 
+
+#Creating a csv file to use for the shiny web app 
+write.csv(asia.covid.df, "~/HBSP/Covid_19_Project/Heri Folder/asia.covid.df", row.names = FALSE)
+
+#variable.order = c("hosp_patients", "icu_patients", 
+                   #"new_tests","new_vaccinations",
+                   #"new_cases","new_deaths") 
+
+#unique(asia.covid.df$location) 
+
+#function(location){ 
+  
+#  }
+
+
+
+#CleanCOVIDdataUS = 
+#  subset(COVIDdataUS, select = c(date, population, 
+#                                 total_cases, people_vaccinated, 
+#                                 total_deaths)) 
+
+#asia.covid.df %>%  
+# filter(!is.na(total_cases) | !is.na(population) | is.na(total_vaccinations))
+
+#CleanCOVIDdataUS[is.na(CleanCOVIDdataUS)] = 0
+#CleanCOVIDdataUS$date = as.Date(CleanCOVIDdataUS$date, format = "%Y-%m-%d")
+#USCOVID_Plot = ggplot(data = CleanCOVIDdataUS) +
+#  geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
+#  geom_line(mapping = aes(x = date, y = population, color = "Population")) +
+#  geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
+#  geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths")) +
+#  xlab("Date") +
+#  ylab("Number of People") +
+#  ggtitle("COVID Pandemic in the US") + theme_bw() + labs(color = "") + theme(legend.position = "top")
+#USCOVID_Plot
+
+#covid.mn.tbl %>%
+#  pivot_longer(c(pcr.cases:hosp.cases, deaths)) %>%
+#  mutate(name = factor(name, levels=variable.order)) %>%
+#  ggplot(aes(x=date, y=value, color=month))+
+#  geom_point()+
+#  labs(x="Date", y="Logarithmic scale")+
+#  facet_grid(.~name)+
+#  scale_y_log10()
 
