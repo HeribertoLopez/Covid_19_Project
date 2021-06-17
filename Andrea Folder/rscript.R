@@ -76,7 +76,7 @@ for(i in countries)
 }
 
 ggplot(data = SAdata)+
-  geom_point(mapping = aes(x = total_vaccinations, y = new_cases, color = location) ) +
-  xlab("People vaccinated") +
-  ylab("New COVID-19 Cases") +
+  geom_point(mapping = aes(x = total_vaccinations_per_hundred, y = new_cases_per_million, color = location) ) +
+  xlab("People vaccinated per hundred") +
+  ylab("New COVID-19 Cases per million") +
   ggtitle("Vaccination vs Case data in all South American countries")
