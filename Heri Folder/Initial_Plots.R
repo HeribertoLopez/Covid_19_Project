@@ -92,7 +92,7 @@ asia.covid.df <- asia.covid.df %>%
   ) 
 
 #Creating a csv file to use for the shiny web app 
-write.csv(asia.covid.df, "~/HBSP/Covid_19_Project/Heri Folder/asia.covid.df", row.names = FALSE)
+#write.csv(asia.covid.df, "~/HBSP/Covid_19_Project/Heri Folder/asia.covid.df", row.names = FALSE)
 
 #variable.order = c("hosp_patients", "icu_patients", 
                    #"new_tests","new_vaccinations",
