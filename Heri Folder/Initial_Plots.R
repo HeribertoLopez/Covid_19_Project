@@ -91,6 +91,8 @@ asia.covid.df <- asia.covid.df %>%
     wday = wday(date)
   ) 
 
+save()
+
 #Creating a csv file to use for the shiny web app 
 #write.csv(asia.covid.df, "~/HBSP/Covid_19_Project/Heri Folder/asia.covid.df", row.names = FALSE)
 
