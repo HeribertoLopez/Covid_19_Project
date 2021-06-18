@@ -14,18 +14,23 @@ library(tidyverse)
 ui <- fluidPage(
     selectInput(inputId = "location",
                 label = "Choose a Country",
-                choices = unique(asia.covid.df$location)), # list of non-duplicated countries 
+                choices = unique(as.owid.df$location)), # list of non-duplicated countries 
     plotOutput("line")
 ) 
 
 server <- function(input, output) { 
     output$line <- renderPlot({
-        ggplot(asia.covid.df %>%  
-                   filter(location == input$location)) + 
-            geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
-            geom_line(mapping = aes(x = date, y = population, color = "Population")) +
-            geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
-            geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths"))  
+        ggplot(as.owid.df %>%  
+                   filter(location == input$location, 
+                          !is.na(prcent_one_dose))) + 
+            geom_line(mapping = (aes(x = date,
+                                  y = people_vaccinated/population, 
+                                  color = "people_vaccinated"))
+            )
+            #geom_line(mapping = aes(x = date, y = total_cases, color = "Total Cases")) +
+            #geom_line(mapping = aes(x = date, y = population, color = "Population")) +
+            #geom_line(mapping = aes(x = date, y = people_vaccinated, color = "Total Vaccinations")) +
+            #geom_line(mapping = aes(x = date, y = total_deaths, color = "Total Deaths"))  
     }
     ) 
 }
