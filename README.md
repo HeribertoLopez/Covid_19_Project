@@ -28,4 +28,8 @@ Sources:
 + Find out if na's mean zero 
   + If it doesnt have na.rm
   + We'll have to think about for contries that are missng data for a day of the week how what we'll do with those possible get the average amount of cases for that week 
-  
+ ###### Lilu's notes: 
+ + You probably took notes but here are my notes based on what Rafa said for next steps (in order of what I think the priority should be to complete):
+    + For each country, do one plot for percent with one dose and one plot with percent fully vaccinated. 
+    + Write a wrangle function that grabs the latest version of the data and processes it into a form ready to be plotted. (I think this may not be super necessary since most of the data is ready to go when you download it)
+    + Investigate what NAs mean (this should be on the website somewhere)
