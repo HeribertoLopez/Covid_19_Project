@@ -31,3 +31,30 @@ CleanWeekData = WeeklyCOVIDdata %>% #making the weekly data into the data we wan
 CleanWeekData = subset(CleanWeekData, select = -c(new_cases_weekly, #dropping the unmodified columns
   new_deaths_weekly, ppl_fully_vacc_week, ppl_vacc_week, 
   week, pop_week))
+
+library(shiny)
+#Run the new weekly data into a set of plots with two axis, one for percent, one for number per 100k people
+ui = fluidPage(
+  selectInput(inputId = "location",
+              label = "Select a Country",
+              choices = unique(CleanWeekData$location)), # list of non-duplicated countries 
+  plotOutput("line")
+) 
+
+server = function(input, output){ 
+  output$line = renderPlot( {
+    ggplot(CleanWeekData %>%  
+             filter(location == input$location)) + 
+      geom_point(mapping = aes(x = date_week, y = new_cases_per_100k, color = "New Weekly Cases"), na.rm=TRUE) +
+      geom_point(mapping = aes(x = date_week, y = percent_ppl_fully_vacc, color = "People Vaccinated [Weekly %]"), na.rm=TRUE) +
+      geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, color = "People Fully Vaccinated [Weekly %"), na.rm=TRUE) +
+      geom_point(mapping = aes(x = date_week, y = new_deaths_per_100k, color = "New Weekly Deaths"), na.rm=TRUE) +
+      xlab("Dates") + ylab("Number Per 100,000 People") +
+      scale_y_continuous(sec.axis = sec_axis(~.*5, name = "Proportion of Population [%]")) +
+      ggtitle("COVID-19 Pandemic") +
+      labs(color = "") + theme_bw() 
+  }
+  )
+}
+# Run the application 
+shinyApp(ui = ui, server = server) 
