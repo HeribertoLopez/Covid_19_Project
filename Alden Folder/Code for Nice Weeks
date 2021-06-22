@@ -45,12 +45,13 @@ server = function(input, output){
   output$line = renderPlot( {
     ggplot(CleanWeekData %>%  
              filter(location == input$location)) + 
-      geom_point(mapping = aes(x = date_week, y = new_cases_per_100k, color = "New Weekly Cases"), na.rm=TRUE) +
+      geom_point(mapping = aes(x = date_week, y = new_cases_per_100k, color = "New Weekly Cases"), shape = 17, na.rm=TRUE) + #the shape makes it identifiable to which y-axis
       geom_point(mapping = aes(x = date_week, y = percent_ppl_fully_vacc, color = "People Vaccinated [Weekly %]"), na.rm=TRUE) +
       geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, color = "People Fully Vaccinated [Weekly %"), na.rm=TRUE) +
-      geom_point(mapping = aes(x = date_week, y = new_deaths_per_100k, color = "New Weekly Deaths"), na.rm=TRUE) +
-      xlab("Dates") + ylab("Number Per 100,000 People") +
-      scale_y_continuous(sec.axis = sec_axis(~.*5, name = "Proportion of Population [%]")) +
+      geom_point(mapping = aes(x = date_week, y = new_deaths_per_100k, color = "New Weekly Deaths"), shape = 17, na.rm=TRUE) + #The shape makes it identifiable to which y-axis
+      xlab("Date") + ylab("Count Per 100,000 [triangle]") +
+      scale_y_continuous(sec.axis = sec_axis(~.*5, name = "Percent of Population [circle]")) +
+      scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks") + 
       ggtitle("COVID-19 Pandemic") +
       labs(color = "") + theme_bw() 
   }
