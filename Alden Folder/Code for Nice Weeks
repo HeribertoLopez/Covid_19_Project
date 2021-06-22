@@ -1,0 +1,24 @@
+#Download the COVID data
+COVIDdata = read.csv("owid-covid-data.csv")
+library(tidyverse)
+WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
+  population, date, new_cases, 
+  new_deaths, people_fully_vaccinated, 
+  people_vaccinated)) #breaking up the data with the variables we want, we can change this
+WeeklyCOVIDdata$date = as.Date(WeeklyCOVIDdata$date, format = "%Y-%m-%d")
+#R doesn't read the dates right
+WeeklyCOVIDdata = WeeklyCOVIDdata %>% mutate(week = format(date, format="%Y-%U"))
+#making a weekly column to group the data by
+
+special.max = function(x){ #Somehow I have to get the max function to ignore an NA when there are other values, but to value something as NA when no value is present
+  ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
+}
+WeeklyCOVIDdata = WeeklyCOVIDdata %>%
+  group_by(location, week) %>% #groups the weekly data first by location, then by week
+    summarise(new_cases_weekly=sum(new_cases), #getting weeklynew cases
+      new_deaths_weekly=sum(new_deaths), #getting weekly deaths
+      pop_week = special.max(population), #why would I sum population
+      ppl_fully_vacc_week = special.max(people_fully_vaccinated), 
+      ppl_vacc_week = special.max(people_vaccinated), #these aren't new
+      date_week = max(date)) #to allow for the columns to be the same length
+#We can change the variables after this point to get the proportions and percentages Dr. Irazarry wanted, or select different columns initially
