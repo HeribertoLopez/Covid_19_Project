@@ -22,3 +22,12 @@ WeeklyCOVIDdata = WeeklyCOVIDdata %>%
       ppl_vacc_week = special.max(people_vaccinated), #these aren't new
       date_week = max(date)) #to allow for the columns to be the same length
 #We can change the variables after this point to get the proportions and percentages Dr. Irazarry wanted, or select different columns initially
+
+CleanWeekData = WeeklyCOVIDdata %>% #making the weekly data into the data we want with percentages and stuff
+  mutate(new_cases_per_100k = new_cases_weekly/pop_week*100000, #weekly cases every 100,000 ppl
+    new_deaths_per_100k = new_deaths_weekly/pop_week*100000, #weekly deaths for every 100,000 ppl
+    percent_ppl_fully_vacc = ppl_fully_vacc_week/pop_week*100, #percent ppl fully vaccinated
+    percent_ppl_vacc = ppl_vacc_week/pop_week*100) #percent ppl vaccinated
+CleanWeekData = subset(CleanWeekData, select = -c(new_cases_weekly, #dropping the unmodified columns
+  new_deaths_weekly, ppl_fully_vacc_week, ppl_vacc_week, 
+  week, pop_week))
