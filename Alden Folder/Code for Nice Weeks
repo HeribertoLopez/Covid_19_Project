@@ -51,7 +51,8 @@ server = function(input, output){
       geom_point(mapping = aes(x = date_week, y = new_deaths_per_100k, color = "New Weekly Deaths"), shape = 17, na.rm=TRUE) + #The shape makes it identifiable to which y-axis
       xlab("Date") + ylab("Count Per 100,000 [triangle]") +
       scale_y_continuous(sec.axis = sec_axis(~.*5, name = "Percent of Population [circle]")) +
-      scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks") + 
+      scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
+        guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant
       ggtitle("COVID-19 Pandemic") +
       labs(color = "") + theme_bw() 
   }
