@@ -1,4 +1,7 @@
-COVIDdata = read.csv("owid-covid-data.csv")
+urlfile = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv" 
+
+COVIDdata = read.csv(url(urlfile))
+
 library(tidyverse)
 library(drc)
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
