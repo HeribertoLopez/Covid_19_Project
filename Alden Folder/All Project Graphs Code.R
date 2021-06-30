@@ -42,9 +42,11 @@ end = CleanWeekData$date_week[length(CleanWeekData)]
 
 CleanWeekData = CleanWeekData %>% # I moved this so that the data frame is all nice and I can pull out infinite values
   mutate(vaxChange2 = (percent_ppl_fully_vacc-lag(percent_ppl_fully_vacc))/lag(percent_ppl_fully_vacc)*100,
-         vaxChange1 = (percent_ppl_vacc-lag(percent_ppl_vacc))/lag(percent_ppl_vacc)*100)
+         vaxChange1 = (percent_ppl_vacc-lag(percent_ppl_vacc))/lag(percent_ppl_vacc)*100,
+         change_ppl_fully_vacc = percent_ppl_fully_vacc-lag(percent_ppl_fully_vacc),
+         change_ppl_vacc = percent_ppl_vacc-lag(percent_ppl_vacc))
 CleanWeekData[mapply(is.infinite, CleanWeekData)] <- NA  #gets rid of any infinite values and stores as NA instead
-  
+
 
 library(shiny)
 #Run the new weekly data into a set of plots with two axis, one for percent, one for number per 100k people
@@ -60,6 +62,8 @@ ui = fluidPage(
   plotOutput("CasesVax"),
   
   plotOutput("percentChangeVax"),
+  
+  plotOutput("ChangeVax"),
   
   mainPanel(
     verbatimTextOutput("minmaxhead"),
@@ -78,7 +82,7 @@ server = function(input, output){
     ggplot(CleanWeekData %>%  
              filter(location == input$location)) + 
       geom_point(mapping = aes(x = date_week, y = new_cases_per_100k, 
-        color = "New Weekly Cases"), shape = 17, na.rm=TRUE) + #the shape makes it identifiable to which y-axis
+                               color = "New Weekly Cases"), shape = 17, na.rm=TRUE) + #the shape makes it identifiable to which y-axis
       xlab("Date") + ylab("New Weekly Cases") +
       scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
                    guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant 
@@ -91,20 +95,20 @@ server = function(input, output){
     ggplot(CleanWeekData %>%  
              filter(location == input$location)) + 
       geom_point(mapping = aes(x = date_week, y = percent_ppl_fully_vacc, 
-          color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
+                               color = "People Fully Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
       geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, 
-          color = "People Fully Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
+                               color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
       xlab("Date") + ylab("Percent Vaccination") +
       scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
                    guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant 
       ggtitle("Weekly Vaccinations for COVID-19") +
       scale_x_date(limits= c(
         first(CleanWeekData 
-            %>% filter(location == input$location, 
-                !is.na(percent_ppl_vacc))%>%pull(date_week)),
+              %>% filter(location == input$location, 
+                         !is.na(percent_ppl_vacc))%>%pull(date_week)),
         last(CleanWeekData 
-            %>% filter(location == input$location,
-                !is.na(percent_ppl_vacc))%>%pull(date_week)))) +
+             %>% filter(location == input$location,
+                        !is.na(percent_ppl_vacc))%>%pull(date_week)))) +
       scale_colour_manual(values=c("seagreen3", "purple2")) +
       labs(color = "") + theme_bw() 
   }
@@ -113,9 +117,9 @@ server = function(input, output){
     ggplot(CleanWeekData %>%  
              filter(location == input$location)) + 
       geom_point(mapping = aes(x = percent_ppl_fully_vacc, color = "People Fully Vaccinated [Weekly %]", 
-          y= new_cases_per_100k), size = 3, na.rm=TRUE) +
+                               y= new_cases_per_100k), size = 3, na.rm=TRUE) +
       geom_point(mapping = aes(x = percent_ppl_vacc, color = "People Vaccinated [Weekly %]", 
-          y = new_cases_per_100k), size = 3, na.rm=TRUE) +
+                               y = new_cases_per_100k), size = 3, na.rm=TRUE) +
       xlab("Vaccinations") + ylab("New Cases Per 100,000") +
       ggtitle("New Cases of COVID-19 vs Vaccination Rates ") +
       scale_colour_manual(values=c("blue3", "gold")) +
@@ -132,15 +136,30 @@ server = function(input, output){
       #y based on 25% each, includes up to 150% just in case ^_^
       scale_y_continuous(limits = c(0,150),breaks=(seq(0,150,25))) +
       geom_point(mapping = aes(x = date_week, y = vaxChange1, color = "People Vaccinated"), 
-          size=3, shape = 17, na.rm=TRUE) + 
+                 size=3, shape = 17, na.rm=TRUE) + 
       geom_point(mapping = aes(x = date_week, y = vaxChange2, color = "People Fully Vaccinated"), 
-          size=3, shape = 17, na.rm=TRUE) + 
-      xlab("Date") + ylab("Change in %") + ggtitle("% Change in COVID-19 Vaccinations Over Weeks") +
+                 size=3, shape = 17, na.rm=TRUE) + 
+      xlab("Date") + ylab("% Change") + ggtitle("% Change in COVID-19 Vaccinations Over Weeks") +
       scale_colour_manual(values=c("lightcoral", "lightblue2")) +
       labs(color = "") + theme_bw() 
   })
   
-  
+  output$ChangeVax = renderPlot({
+    ggplot(
+      CleanWeekData %>% filter(location == input$location)) + #this is to make sure the data starts on the first week that has vaccination data
+      scale_x_date(limits= c(
+        first(CleanWeekData %>% filter(location == input$location,!is.na(percent_ppl_vacc))%>%pull(date_week)),
+        last(CleanWeekData %>% filter(location == input$location,!is.na(percent_ppl_vacc))%>%pull(date_week))
+      ), date_breaks = "2 weeks", date_minor_breaks = "1 week", guide = guide_axis(angle = 45))+
+      #y based on 25% each, includes up to 150% just in case ^_^
+      geom_point(mapping = aes(x = date_week, y = change_ppl_vacc, color = "People Vaccinated"), 
+                 size=3, shape = 17, na.rm=TRUE) + 
+      geom_point(mapping = aes(x = date_week, y = change_ppl_fully_vacc, color = "People Fully Vaccinated"), 
+                 size=3, shape = 17, na.rm=TRUE) + 
+      xlab("Date") + ylab("Change in % Vaccinations") + ggtitle("Change in % COVID-19 Vaccinations Over Weeks") +
+      scale_colour_manual(values=c("cornflowerblue", "firebrick1")) +
+      labs(color = "") + theme_bw() 
+  })
   
   #if youre just here for the graphs, ignore all of this
   output$minmaxhead = renderPrint({"Location.............Minimum Value..........Max Value"})
@@ -175,4 +194,3 @@ server = function(input, output){
 }
 # Run the application 
 shinyApp(ui = ui, server = server)
-
