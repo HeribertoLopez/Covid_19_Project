@@ -91,9 +91,9 @@ server = function(input, output){
     ggplot(CleanWeekData %>%  
              filter(location == input$location)) + 
       geom_point(mapping = aes(x = date_week, y = percent_ppl_fully_vacc, 
-          color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
-      geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, 
           color = "People Fully Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
+      geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, 
+          color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
       xlab("Date") + ylab("Percent Vaccination") +
       scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
                    guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant 
