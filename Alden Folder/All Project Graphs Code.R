@@ -1,5 +1,6 @@
+#linl for latest dataset
 urlfile = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv" 
-
+#reloading it 
 COVIDdata = read.csv(url(urlfile))
 
 library(tidyverse)
