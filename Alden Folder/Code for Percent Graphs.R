@@ -1,4 +1,7 @@
-COVIDdata = read.csv("owid-covid-data.csv")
+#link for latest dataset
+urlfile = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv" 
+#reloading dataset 
+COVIDdata = read.csv(url(urlfile))
 library(tidyverse)
 library(drc)
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
@@ -48,7 +51,8 @@ library(shiny)
 ui = fluidPage(
   selectInput(inputId = "location",
               label = "Select a Country",
-              choices = unique(PercentCleanWeekData$location)), # list of non-duplicated countries 
+              choices = unique(PercentCleanWeekData$location),
+              selected = "United States"), # list of non-duplicated countries 
   plotOutput("line")
 ) 
 
