@@ -1,0 +1,86 @@
+---
+title: "Vaccination_Plots"
+author: "Heriberto Lopez"
+date: "6/18/2021"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(readr)
+
+#Our world in data covid 19 datasets : 
+# https://github.com/owid/covid-19-data/tree/master/public/data 
+
+urlfile = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv" 
+
+# Load OurWorldinData 
+owid.df <- read.csv(url(urlfile))
+
+owid.df$date = as.Date(owid.df$date, format = "%Y-%m-%d") 
+
+#Creating a month variable 
+owid.df <- owid.df %>%  
+  mutate(
+    month = month(date, label = T), 
+    wday = wday(date)
+  )  
+
+#creating variable for percent with one dose 
+owid.df <- owid.df %>% 
+  mutate(
+    prcent_one_dose = people_vaccinated / population
+  )
+
+#urlfile2 = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv"
+
+
+#owid.vax.df <- read.csv(url(urlfile2)) 
+```
+
+# For each Country, do one plot for percent with one dose and one plot with percent fully vaccinated 
+
+```{r}
+#selecting variables of interst into a subset dataset for the continent of asia 
+as.owid.df <- owid.df %>% 
+  filter(continent == "Asia") %>% 
+  select(iso_code, continent, location, date, month, 
+         new_cases, total_cases, 
+         new_deaths, total_deaths, icu_patients, hosp_patients,
+         people_vaccinated, people_fully_vaccinated, new_vaccinations,
+         people_vaccinated_per_hundred,
+         people_fully_vaccinated_per_hundred, population, prcent_one_dose) 
+```
+
+```{r}
+#creating one initial plot for Afghanistan: 
+# - A Ploi for percent with one dose 
+ggplot(as.owid.df %>% filter(location == "Afghanistan", !is.na(prcent_one_dose)), aes(x = date)) + 
+  geom_line(aes(y = prcent_one_dose , color = "people vaccinated"))
+  
+
+#coeff <- 1e4 # try using 10,000 as the  adjustment factor 
+
+#ggplot(us, aes(x = date, group=location)) +
+#  geom_line(aes(y = new_cases)) +
+#  geom_line(aes(y = people_vaccinated_per_hundred*coeff), color='red')  +
+#  scale_y_continuous(name = 'New Cases',
+#                     sec.axis = sec_axis(~./coeff, name='Vaccinations per hundred')) +
+
+```
+
+```{r}
+#Saving asian continent csv file 
+write.csv(as.owid.df, "~/HBSP/Covid_19_Project/Heri Folder/Datasets/as.owid.df", row.names = FALSE)
+```
+
+
+# Write a wrangle function that grabs the latest version of the data and processes it into a form ready to be plotted. (This may not be super necessary since most of the data is ready to go when you download it).  
+
+
+
+

@@ -1,6 +1,7 @@
 #Download the COVID data
 COVIDdata = read.csv("owid-covid-data.csv")
 library(tidyverse)
+
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
   population, date, new_cases, 
   new_deaths, people_fully_vaccinated, 

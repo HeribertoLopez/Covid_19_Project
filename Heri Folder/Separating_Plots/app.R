@@ -51,7 +51,9 @@ library(shiny)
 ui = fluidPage(
     selectInput(inputId = "location",
                 label = "Select a Country",
-                choices = unique(CleanWeekData$location)), # list of non-duplicated countries 
+                choices = unique(CleanWeekData$location),
+                selected =  "United States"
+                ), # list of non-duplicated countries 
     plotOutput("Cases"),
     
     plotOutput("Vax"),
