@@ -1,4 +1,4 @@
-#linl for latest dataset
+#link for latest dataset
 urlfile = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv" 
 #reloading dataset 
 COVIDdata = read.csv(url(urlfile))
