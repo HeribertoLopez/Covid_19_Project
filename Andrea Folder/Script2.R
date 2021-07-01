@@ -74,7 +74,8 @@ ui = fluidPage(
   selectInput(inputId = "state",
               label = "Select a State",
               choices = unique(CleanWeekData$state),
-              selected = "Alabama"), # list of non-duplicated countries 
+              selected = "Alabama",
+              multiple = TRUE), # list of non-duplicated countries 
   plotOutput("Cases"),
   
   plotOutput("Vax"),
