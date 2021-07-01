@@ -6,6 +6,7 @@ COVIDdata = read.csv(url(urlfile))
 
 library(tidyverse)
 library(drc)
+library(scales)
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
                                                population, date, new_cases, 
                                                new_deaths, people_fully_vaccinated, 
@@ -173,10 +174,11 @@ server = function(input, output){
       geom_point(mapping = aes(x = date_week, y = new_cases_per_100k, 
                                color = "New Weekly Cases"), shape = 17, na.rm=TRUE) + #the shape makes it identifiable to which y-axis
       xlab("Date") + ylab("New Weekly Cases") +
-      scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
-                   guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant 
+      scale_x_date(date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+        guide = guide_axis(angle = 60)) + #This is just to give the axis ticks some cool slant 
       ggtitle("New Weekly Cases of COVID-19") +
       scale_colour_manual(values = c("dodgerblue2")) +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       labs(color = "") + theme_bw() + facet_wrap(location~ .)
   }
   )
@@ -188,8 +190,6 @@ server = function(input, output){
       geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, 
                                color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
       xlab("Date") + ylab("Percent Vaccination") +
-      scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
-                   guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant 
       ggtitle("Weekly Vaccinations for COVID-19") +
       scale_x_date(limits= c(
         first(AllCleanData 
@@ -197,7 +197,9 @@ server = function(input, output){
                          !is.na(percent_ppl_vacc))%>%pull(date_week)),
         last(AllCleanData 
              %>% filter(location %in% input$location,
-                        !is.na(percent_ppl_vacc))%>%pull(date_week)))) +
+                        !is.na(percent_ppl_vacc))%>%pull(date_week))), date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+        guide = guide_axis(angle = 60)) +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       scale_colour_manual(values=c("seagreen3", "purple2")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   }
@@ -210,8 +212,9 @@ server = function(input, output){
       geom_point(mapping = aes(x = percent_ppl_vacc, color = "People Vaccinated [Weekly %]", 
                                y = new_cases_per_100k), size = 3, na.rm=TRUE) +
       xlab("Vaccinations") + ylab("New Cases Per 100,000") +
-      xlim(5,100) +
+      xlim(5,80) + scale_x_continuous(limits = c(0,80), breaks=seq(0,80,5)) +
       ggtitle("New Cases of COVID-19 vs Vaccination Rates ") +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       scale_colour_manual(values=c("blue3", "gold")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   }
@@ -222,7 +225,8 @@ server = function(input, output){
       scale_x_date(limits= c(
         first(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week)),
         last(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week))
-      ), date_breaks = "2 weeks", date_minor_breaks = "1 week", guide = guide_axis(angle = 45))+
+      ), date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+                      guide = guide_axis(angle = 60)) +
       #y based on 25% each, includes up to 150% just in case ^_^
       scale_y_continuous(limits = c(0,150),breaks=(seq(0,150,25))) +
       geom_point(mapping = aes(x = date_week, y = vaxChange1, color = "People Vaccinated"), 
@@ -230,6 +234,7 @@ server = function(input, output){
       geom_point(mapping = aes(x = date_week, y = vaxChange2, color = "People Fully Vaccinated"), 
                  size=3, shape = 17, na.rm=TRUE) + 
       xlab("Date") + ylab("% Change") + ggtitle("% Change in COVID-19 Vaccinations Over Weeks") +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       scale_colour_manual(values=c("lightcoral", "lightblue2")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   })
@@ -240,13 +245,15 @@ server = function(input, output){
       scale_x_date(limits= c(
         first(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week)),
         last(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week))
-      ), date_breaks = "2 weeks", date_minor_breaks = "1 week", guide = guide_axis(angle = 45))+
+      ), date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+      guide = guide_axis(angle = 60)) +
       #y based on 25% each, includes up to 150% just in case ^_^
       geom_point(mapping = aes(x = date_week, y = change_ppl_vacc, color = "People Vaccinated"), 
                  size=3, shape = 17, na.rm=TRUE) + 
       geom_point(mapping = aes(x = date_week, y = change_ppl_fully_vacc, color = "People Fully Vaccinated"), 
                  size=3, shape = 17, na.rm=TRUE) + 
       xlab("Date") + ylab("Change in % Vaccinations") + ggtitle("Change in % COVID-19 Vaccinations Over Weeks") +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       scale_colour_manual(values=c("cornflowerblue", "firebrick1")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   })
