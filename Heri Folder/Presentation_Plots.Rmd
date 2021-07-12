@@ -74,10 +74,30 @@ CleanWeekData[mapply(is.infinite, CleanWeekData)] <- NA  #gets rid of any infini
 1) 
 + All countries on one plot for cases vs time 
 ```{r, eval = FALSE}
-CleanWeekData %>% 
-  ggplot(aes(x = date_week, y = new_cases_per_100k, color = as.factor(iso_code))) + 
-  geom_line(linetype = 1, size = 0.5)
+#First plot all countries plot 
+ggraph2  <- CleanWeekData %>% 
+  ggplot(aes(x = date_week, y = new_cases_per_100k, color = as.factor(iso_code), group  = as.factor(iso_code))) +  
+  geom_line(linetype = 1, size = 0.5) + 
+  theme(legend.position = "none")
 ```
+
+```{r}
+ggraph2 + 
+  geom_label_repel(data = filter(CleanWeekData,iso_code %in% c("USA", "CAN", "CHN", "ISR", "KOR", "FRA")), 
+                   aes(label = as.factor(iso_code)),
+                   nudge_x = .75,
+                   na.rm = TRUE) +
+  theme(legend.position = "none")
+```
+
+ geom_label_repel(data = filter(mydf, Quarter == second_to_last_quarter), 
+                   aes(label = State),
+                   nudge_x = .75,
+                   na.rm = TRUE) +
+  theme(legend.position = "none")
+
+
+
 
 +  % fully vaccinated vs time, side-by-side  
 
@@ -89,4 +109,5 @@ CleanWeekData %>%
 
 
 
-2) Side-by-side comparison of cases vs time and % fully vaccinated vs time for countries/states with “high” and “low” delta variant % (you’ll need to play around with what is high and low, for example you can just look at a bunch of examples and see if there is any trend from low to high - if there isn’t then it may be useful to report that negative result  as well)
+2) Side-by-side comparison of cases vs time and % fully vaccinated vs time for countries/states with “high” and “low” delta variant % (you’ll need to play around with what is high and low, for example you can just look at a bunch of examples and see if there is any trend from low to high - if there isn’t then it may be useful to report that negative result  as well) 
+

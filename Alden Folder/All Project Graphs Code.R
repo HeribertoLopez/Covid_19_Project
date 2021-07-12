@@ -9,7 +9,7 @@ library(drc)
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
                                                population, date, new_cases, 
                                                new_deaths, people_fully_vaccinated, 
-                                               people_vaccinated)) #breaking up the data with the variables we want, we can change this
+                                               people_vaccinated, hosp_patients, weekly_hosp_admissions)) #breaking up the data with the variables we want, we can change this
 WeeklyCOVIDdata$date = as.Date(WeeklyCOVIDdata$date, format = "%Y-%m-%d")
 #R doesn't read the dates right
 WeeklyCOVIDdata = WeeklyCOVIDdata %>% mutate(week = format(date, format="%Y-%U"))
@@ -26,17 +26,19 @@ WeeklyCOVIDdata = WeeklyCOVIDdata %>%
             pop_week = special.max(population), #why would I sum population
             ppl_fully_vacc_week = special.max(people_fully_vaccinated), 
             ppl_vacc_week = special.max(people_vaccinated), #these aren't new
-            date_week = max(date)) #to allow for the columns to be the same length
+            date_week = max(date), 
+            weekly_hospitalizations = sum(hosp_patients))#to allow for the columns to be the same length
 #We can change the variables after this point to get the proportions and percentages Dr. Irazarry wanted, or select different columns initially
 
 CleanWeekData = WeeklyCOVIDdata %>% #making the weekly data into the data we want with percentages and stuff
   mutate(new_cases_per_100k = new_cases_weekly/pop_week*100000, #weekly cases every 100,000 ppl
          new_deaths_per_100k = new_deaths_weekly/pop_week*100000, #weekly deaths for every 100,000 ppl
          percent_ppl_fully_vacc = ppl_fully_vacc_week/pop_week*100, #percent ppl fully vaccinated
-         percent_ppl_vacc = ppl_vacc_week/pop_week*100) #percent ppl vaccinated
+         percent_ppl_vacc = ppl_vacc_week/pop_week*100, 
+         new_hosp_per_100k = weekly_hospitalizations/pop_week*100000) #percent ppl vaccinated
 CleanWeekData = subset(CleanWeekData, select = -c(new_cases_weekly, #dropping the unmodified columns
                                                   new_deaths_weekly, ppl_fully_vacc_week, ppl_vacc_week, 
-                                                  week, pop_week))
+                                                  week, pop_week, weekly_hospitalizations))
 
 #initial date and finishing date for vaccine prob change
 init = CleanWeekData$date_week[which(!is.na(CleanWeekData$date_week))]
@@ -68,6 +70,10 @@ ui = fluidPage(
   plotOutput("percentChangeVax"),
   
   plotOutput("ChangeVax"),
+  
+  plotOutput("Hospitalizations"),
+  
+  plotOutput("CasesHospitalizations"), 
   
   mainPanel(
     verbatimTextOutput("minmaxhead"),
@@ -164,6 +170,37 @@ server = function(input, output){
       scale_colour_manual(values=c("cornflowerblue", "firebrick1")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   })
+  
+  output$Hospitalizations = renderPlot({
+    ggplot(CleanWeekData %>%  filter(location %in% input$location))  + 
+      geom_point(mapping = aes(x = date_week, y = new_hosp_per_100k, 
+                               color = "New People Hospitalized per 100k"), size = 3, na.rm=TRUE) +
+      xlab("Date") + ylab("Hospitalizations per 100k") +
+      scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
+                   guide = guide_axis(angle = 45)) + #This is just to give the axis ticks some cool slant 
+      ggtitle("Weekly Hospitalizations  for COVID-19") +
+      ylab("New Hohspitalizations Per 100,000") +
+      scale_colour_manual(values = c("dodgerblue2")) +
+      labs(color = "") + theme_bw() + facet_wrap(location~ .) 
+      
+      
+    
+  })
+  
+  output$CasesHospitalizations = renderPlot( {
+    ggplot(CleanWeekData %>%  
+             filter(location %in% input$location)) + 
+      geom_point(mapping = aes(x = percent_ppl_fully_vacc, color = "People Fully Vaccinated [Weekly %]", 
+                               y= new_hosp_per_100k), size = 3, na.rm=TRUE) +
+      geom_point(mapping = aes(x = percent_ppl_vacc, color = "People Vaccinated [Weekly %]", 
+                               y = new_hosp_per_100k), size = 3, na.rm=TRUE) +
+      xlab("Vaccinations") + ylab("New Hospitalizations Per 100,000") +
+      ggtitle("New Cases of COVID-19 Hospitalizations vs Vaccination Rates ") +
+      scale_colour_manual(values=c("blue3", "gold")) +
+      labs(color = "") + theme_bw() +  facet_wrap(location~ .)
+  }
+  )
+  
   
   #if youre just here for the graphs, ignore all of this
   output$minmaxhead = renderPrint({"Location.............Minimum Value..........Max Value"})

@@ -12,6 +12,7 @@ editor_options:
 library(tidyverse)
 library(readr) 
 library(lubridate)
+library(ggrepel)
 
 knitr::opts_chunk$set(echo = TRUE) 
 
@@ -46,14 +47,14 @@ special.max = function(x){ #
 }
 
 # Creating new variables for visualization 
-COVIDdata %>% 
-  group_by(iso_code, location, week, population) %>% 
-  summarise(
-    new_weekly_cases = sum(new_cases), # new weekly cases variable 
-    new_weekly_deaths = sum(new_deaths)) # new weekly deaths variable 
-    population = 
+#COVIDdata %>% 
+#  group_by(iso_code, location, week, population) %>% 
+#  summarise(
+#    new_weekly_cases = sum(new_cases), # new weekly #cases variable 
+ #   new_weekly_deaths = sum(new_deaths)) # new weekly deaths variable 
+  #  population = 
     
-  )
+#  )
 #
 WeeklyCOVIDdata = WeeklyCOVIDdata %>%
   group_by(iso_code, location, week) %>% #groups the weekly data first by location, then by week
