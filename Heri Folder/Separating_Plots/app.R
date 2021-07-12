@@ -56,7 +56,10 @@ ui = fluidPage(
                 choices = unique(CleanWeekData$location),
                 selected = "United States", 
                 multiple = TRUE
-    ), # list of non-duplicated countries 
+    ), 
+    
+    checkboxInput("check_box", "Include People Fully Vaccinated", value = FALSE),
+    
     plotOutput("Cases"),
     
     plotOutput("Vax"),
@@ -76,7 +79,10 @@ ui = fluidPage(
         verbatimTextOutput("linesum"),
         verbatimTextOutput("loghead"),
         verbatimTextOutput("log")
-    )
+    ), 
+    
+        checkboxInput("check_boxk", "Include Top 5 Countries?", value = FALSE)
+    
 ) 
 
 server = function(input, output){ 

@@ -1,0 +1,92 @@
+---
+title: "Plots for Presentation"
+author: "Heriberto Lopez"
+date: "7/7/2021"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(drc)
+library(lubridate)
+
+```
+
+```{r, include = FALSE, eval = FALSE}
+#link for latest dataset
+urlfile = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv" 
+#reloading dataset 
+COVIDdata = read.csv(url(urlfile))  
+
+#Subsetting variables of interest 
+WeeklyCOVIDdata = subset(COVIDdata, select = c(iso_code, location, 
+                                               population, date, new_cases, 
+                                               new_deaths, people_fully_vaccinated, 
+                                               people_vaccinated)) #breaking up the data with the variables we want, we can change this
+
+#Adjusting the format of the date 
+WeeklyCOVIDdata$date = as.Date(WeeklyCOVIDdata$date, format = "%Y-%m-%d") 
+
+# Creating a group variable to group the data by 
+WeeklyCOVIDdata = WeeklyCOVIDdata %>% mutate(week = format(date, format="%Y-%U"))
+
+#Creating a function that takes in an input and ignore an NA when there are other values, but to value something as NA when no value is present
+special.max = function(x){ 
+  ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
+}
+
+#grouping the data by location and week to calculate weekly cases, new deaths per week, ppl fully vaccinated, 
+
+WeeklyCOVIDdata = WeeklyCOVIDdata %>%
+  group_by(iso_code, week) %>% 
+  summarise(new_cases_weekly=sum(new_cases), 
+            new_deaths_weekly=sum(new_deaths),
+            pop_week = special.max(population),
+            ppl_fully_vacc_week = special.max(people_fully_vaccinated), 
+            ppl_vacc_week = special.max(people_vaccinated), #these aren't new
+            date_week = max(date)) #to allow for the columns to be the same length
+#We can change the variables after this point to get the proportions and percentages Dr. Irazarry wanted, or select different columns initially 
+
+CleanWeekData = WeeklyCOVIDdata %>% #making the weekly data into the data we want with percentages and stuff
+  mutate(new_cases_per_100k = new_cases_weekly/pop_week*100000, #weekly cases every 100,000 ppl
+         new_deaths_per_100k = new_deaths_weekly/pop_week*100000, #weekly deaths for every 100,000 ppl
+         percent_ppl_fully_vacc = ppl_fully_vacc_week/pop_week*100, #percent ppl fully vaccinated
+         percent_ppl_vacc = ppl_vacc_week/pop_week*100) #percent ppl vaccinated
+CleanWeekData = subset(CleanWeekData, select = -c(new_cases_weekly, #dropping the unmodified columns
+                                                  new_deaths_weekly, ppl_fully_vacc_week, ppl_vacc_week, 
+                                                  week, pop_week))
+
+#initial date and finishing date for vaccine prob change
+init = CleanWeekData$date_week[which(!is.na(CleanWeekData$date_week))]
+end = CleanWeekData$date_week[length(CleanWeekData)]
+
+CleanWeekData = CleanWeekData %>% # I moved this so that the data frame is all nice and I can pull out infinite values
+  mutate(vaxChange2 = (percent_ppl_fully_vacc-lag(percent_ppl_fully_vacc))/lag(percent_ppl_fully_vacc)*100,
+         vaxChange1 = (percent_ppl_vacc-lag(percent_ppl_vacc))/lag(percent_ppl_vacc)*100,
+         change_ppl_fully_vacc = percent_ppl_fully_vacc-lag(percent_ppl_fully_vacc),
+         change_ppl_vacc = percent_ppl_vacc-lag(percent_ppl_vacc))
+CleanWeekData[mapply(is.infinite, CleanWeekData)] <- NA  #gets rid of any infinite values and stores as NA instead
+
+```
+
+1) 
++ All countries on one plot for cases vs time 
+```{r, eval = FALSE}
+CleanWeekData %>% 
+  ggplot(aes(x = date_week, y = new_cases_per_100k, color = as.factor(iso_code))) + 
+  geom_line(linetype = 1, size = 0.5)
+```
+
++  % fully vaccinated vs time, side-by-side  
+
+```{r, eval = FALSE}
+CleanWeekData %>% 
+  ggplot(aes(x = date_week, y = percent_ppl_fully_vacc, color = as.factor(iso_code))) + 
+  geom_line(linetype = 1, size = 0.5)
+```
+
+
+
+2) Side-by-side comparison of cases vs time and % fully vaccinated vs time for countries/states with “high” and “low” delta variant % (you’ll need to play around with what is high and low, for example you can just look at a bunch of examples and see if there is any trend from low to high - if there isn’t then it may be useful to report that negative result  as well)

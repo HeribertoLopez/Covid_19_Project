@@ -5,6 +5,7 @@ COVIDdata = read.csv(url(urlfile))
 
 library(tidyverse)
 library(drc)
+
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
                                                population, date, new_cases, 
                                                new_deaths, people_fully_vaccinated, 
@@ -17,6 +18,7 @@ WeeklyCOVIDdata = WeeklyCOVIDdata %>% mutate(week = format(date, format="%Y-%U")
 special.max = function(x){ #Somehow I have to get the max function to ignore an NA when there are other values, but to value something as NA when no value is present
   ifelse( !all(is.na(x)), max(x, na.rm=T), NA)
 }
+
 WeeklyCOVIDdata = WeeklyCOVIDdata %>%
   group_by(location, week) %>% #groups the weekly data first by location, then by week
   summarise(new_cases_weekly=sum(new_cases), #getting weeklynew cases
