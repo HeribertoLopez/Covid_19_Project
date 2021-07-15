@@ -119,8 +119,8 @@ StateCleanWeekData[mapply(is.infinite, StateCleanWeekData)] <- NA  #gets rid of 
 
 
 StateWeekDataMatch = subset(StateCleanWeekData, #I used the same code as Andrea to get this, but I renamed the data frames so my data frames wouldn't get overwritten
-  select = -c(ppl_fully_vacc_week, ppl_vacc_week, new_cases_weekly, new_deaths_weekly)) 
-#I didn't want certain clumns so I could merge better
+                            select = -c(ppl_fully_vacc_week, ppl_vacc_week, new_cases_weekly, new_deaths_weekly)) 
+#I didn't want certain columns so I could merge better
 StateWeekDataMatch = StateWeekDataMatch[c(1,6,4,5,2,3,7,8,9,10)] #Reorder the columns
 StateWeekDataMatch$state <- paste("(State)", StateWeekDataMatch$state, sep=" ")
 #Make it so that states like Georgia and countries named Georgia don't mess things up
@@ -147,14 +147,31 @@ ui = fluidPage(
   ), # list of non-duplicated countries or states
   plotOutput("Cases"),
   
+  radioButtons("vaxOptions", "Data:",
+               c("Fully Vaccinated [Weekly %]" = "full",
+                 "Vaccinated [Weekly %]" = "reg")),
+  
   plotOutput("Vax"),
   
+  radioButtons("casesVaxOptions", "Data:",
+               c("Fully Vaccinated [Weekly %]" = "full",
+                 "Vaccinated [Weekly %]" = "reg")),
+
   plotOutput("CasesVax"),
+  
+  radioButtons("percentChangeVaxOptions", "Data:",
+               c("Fully Vaccinated [Weekly %]" = "full",
+                 "Vaccinated [Weekly %]" = "reg")),
   
   plotOutput("percentChangeVax"),
   
-  plotOutput("ChangeVax"),
+  radioButtons("changeVaxOptions", "Data:",
+               c("Fully Vaccinated [Weekly %]" = "full",
+                 "Vaccinated [Weekly %]" = "reg")),
   
+ 
+  plotOutput("ChangeVax"),
+ 
   mainPanel(
     verbatimTextOutput("minmaxhead"),
     verbatimTextOutput("minmax"),
@@ -168,6 +185,7 @@ ui = fluidPage(
 ) 
 
 server = function(input, output){ 
+  
   output$Cases = renderPlot( {
     ggplot(AllCleanData %>%  
              filter(location %in% input$location)) + 
@@ -175,20 +193,26 @@ server = function(input, output){
                                color = "New Weekly Cases"), shape = 17, na.rm=TRUE) + #the shape makes it identifiable to which y-axis
       xlab("Date") + ylab("New Weekly Cases") +
       scale_x_date(date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
-        guide = guide_axis(angle = 60)) + #This is just to give the axis ticks some cool slant 
+                   guide = guide_axis(angle = 60)) + #This is just to give the axis ticks some cool slant 
       ggtitle("New Weekly Cases of COVID-19") +
       scale_colour_manual(values = c("dodgerblue2")) +
       scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       labs(color = "") + theme_bw() + facet_wrap(location~ .)
   }
   )
+  
+  
   output$Vax = renderPlot( {
+    
+    vaxOptions = switch(input$vaxOptions,
+                        full = geom_point(mapping = aes(x = date_week, y = percent_ppl_fully_vacc, 
+                                                        color = "People Fully Vaccinated [Weekly %]"), size = 3, na.rm=TRUE),
+                        reg = geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, 
+                                                       color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE)
+                        )
     ggplot(AllCleanData %>%  
              filter(location %in% input$location)) + 
-      geom_point(mapping = aes(x = date_week, y = percent_ppl_fully_vacc, 
-                               color = "People Fully Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
-      geom_point(mapping = aes(x = date_week, y = percent_ppl_vacc, 
-                               color = "People Vaccinated [Weekly %]"), size = 3, na.rm=TRUE) +
+      vaxOptions +
       xlab("Date") + ylab("Percent Vaccination") +
       ggtitle("Weekly Vaccinations for COVID-19") +
       scale_x_date(limits= c(
@@ -204,13 +228,19 @@ server = function(input, output){
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   }
   )
+  
+ 
   output$CasesVax = renderPlot( {
+    
+    casesVaxOptions = switch(input$casesVaxOptions,
+                             full= geom_point(mapping = aes(x = percent_ppl_fully_vacc, color = "People Fully Vaccinated [Weekly %]", 
+                                                            y= new_cases_per_100k), size = 3, na.rm=TRUE),
+                             reg= geom_point(mapping = aes(x = percent_ppl_vacc, color = "People Vaccinated [Weekly %]", 
+                                                           y = new_cases_per_100k), size = 3, na.rm=TRUE)
+    )
     ggplot(AllCleanData %>%  
              filter(location %in% input$location)) + 
-      geom_point(mapping = aes(x = percent_ppl_fully_vacc, color = "People Fully Vaccinated [Weekly %]", 
-                               y= new_cases_per_100k), size = 3, na.rm=TRUE) +
-      geom_point(mapping = aes(x = percent_ppl_vacc, color = "People Vaccinated [Weekly %]", 
-                               y = new_cases_per_100k), size = 3, na.rm=TRUE) +
+      casesVaxOptions +
       xlab("Vaccinations") + ylab("New Cases Per 100,000") +
       xlim(5,80) + scale_x_continuous(limits = c(0,80), breaks=seq(0,80,5)) +
       ggtitle("New Cases of COVID-19 vs Vaccination Rates ") +
@@ -219,27 +249,14 @@ server = function(input, output){
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   }
   )
-  output$percentChangeVax = renderPlot({
-    ggplot(
-      AllCleanData %>% filter(location %in% input$location)) + #this is to make sure the data starts on the first week that has vaccination data
-      scale_x_date(limits= c(
-        first(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week)),
-        last(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week))
-      ), date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
-                      guide = guide_axis(angle = 60)) +
-      #y based on 25% each, includes up to 150% just in case ^_^
-      scale_y_continuous(limits = c(0,150),breaks=(seq(0,150,25))) +
-      geom_point(mapping = aes(x = date_week, y = vaxChange1, color = "People Vaccinated"), 
-                 size=3, shape = 17, na.rm=TRUE) + 
-      geom_point(mapping = aes(x = date_week, y = vaxChange2, color = "People Fully Vaccinated"), 
-                 size=3, shape = 17, na.rm=TRUE) + 
-      xlab("Date") + ylab("% Change") + ggtitle("% Change in COVID-19 Vaccinations Over Weeks") +
-      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
-      scale_colour_manual(values=c("lightcoral", "lightblue2")) +
-      labs(color = "") + theme_bw() +  facet_wrap(location~ .)
-  })
   
-  output$ChangeVax = renderPlot({
+  output$percentChangeVax = renderPlot({
+    
+    percentChangeVaxOptions = switch(input$percentChangeVaxOptions,
+                                     full = geom_point(mapping = aes(x = date_week, y = vaxChange2, color = "People Fully Vaccinated"), 
+                                                       size=3, shape = 17, na.rm=TRUE),
+                                     reg = geom_point(mapping = aes(x = date_week, y = vaxChange1, color = "People Vaccinated"), 
+                                                      size=3, shape = 17, na.rm=TRUE))
     ggplot(
       AllCleanData %>% filter(location %in% input$location)) + #this is to make sure the data starts on the first week that has vaccination data
       scale_x_date(limits= c(
@@ -248,10 +265,30 @@ server = function(input, output){
       ), date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
       guide = guide_axis(angle = 60)) +
       #y based on 25% each, includes up to 150% just in case ^_^
-      geom_point(mapping = aes(x = date_week, y = change_ppl_vacc, color = "People Vaccinated"), 
-                 size=3, shape = 17, na.rm=TRUE) + 
-      geom_point(mapping = aes(x = date_week, y = change_ppl_fully_vacc, color = "People Fully Vaccinated"), 
-                 size=3, shape = 17, na.rm=TRUE) + 
+      scale_y_continuous(limits = c(0,150),breaks=(seq(0,150,25))) +
+      percentChangeVaxOptions + 
+      xlab("Date") + ylab("% Change") + ggtitle("% Change in COVID-19 Vaccinations Over Weeks") +
+      scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
+      scale_colour_manual(values=c("lightcoral", "lightblue2")) +
+      labs(color = "") + theme_bw() +  facet_wrap(location~ .)
+  })
+  
+  output$ChangeVax = renderPlot({
+    
+    changeVaxOptions = switch(input$changeVaxOptions,
+                              full = geom_point(mapping = aes(x = date_week, y = change_ppl_fully_vacc, color = "People Fully Vaccinated"), 
+                                               size=3, shape = 17, na.rm=TRUE),
+                              reg= geom_point(mapping = aes(x = date_week, y = change_ppl_vacc, color = "People Vaccinated"), 
+                                              size=3, shape = 17, na.rm=TRUE)
+                              )
+    ggplot(
+      AllCleanData %>% filter(location %in% input$location)) + #this is to make sure the data starts on the first week that has vaccination data
+      scale_x_date(limits= c(
+        first(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week)),
+        last(AllCleanData %>% filter(location %in% input$location,!is.na(percent_ppl_vacc))%>%pull(date_week))
+      ), date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+      guide = guide_axis(angle = 60)) +
+      changeVaxOptions + 
       xlab("Date") + ylab("Change in % Vaccinations") + ggtitle("Change in % COVID-19 Vaccinations Over Weeks") +
       scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
       scale_colour_manual(values=c("cornflowerblue", "firebrick1")) +
