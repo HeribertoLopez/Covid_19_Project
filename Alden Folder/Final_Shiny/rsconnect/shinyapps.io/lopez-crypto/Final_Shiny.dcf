@@ -1,0 +1,13 @@
+name: Final_Shiny
+title: Final_Shiny
+username:
+account: lopez-crypto
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4388554
+bundleId: 4822532
+url: https://lopez-crypto.shinyapps.io/Final_Shiny/
+when: 1626358953.26286
+lastSyncTime: 1626358953.26286
+asMultiple: FALSE
+asStatic: FALSE

@@ -5,6 +5,7 @@ COVIDdata = read.csv(url(urlfile))
 
 library(tidyverse)
 library(drc)
+library(lubridate)
 
 WeeklyCOVIDdata = subset(COVIDdata, select = c(location, 
                                                population, date, new_cases, 
@@ -50,6 +51,102 @@ CleanWeekData = CleanWeekData %>% # I moved this so that the data frame is all n
          change_ppl_fully_vacc = percent_ppl_fully_vacc-lag(percent_ppl_fully_vacc),
          change_ppl_vacc = percent_ppl_vacc-lag(percent_ppl_vacc))
 CleanWeekData[mapply(is.infinite, CleanWeekData)] <- NA  #gets rid of any infinite values and stores as NA instead
+
+# fully_vaccinated
+CleanWeekData %>%
+  filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States")) %>% 
+         ggplot() + 
+  geom_point(aes(x = date_week, y = percent_ppl_fully_vacc, color = location),
+             size = 3, na.rm = TRUE) + 
+  xlab("Date") + ylab("Percent People fully Vaccinated") + 
+  geom_smooth(aes(x = date_week, y = percent_ppl_fully_vacc, color = location), se = F) + 
+  #scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
+   #            guide = guide_axis(angle = 45)) +   
+  ggtitle("Weekly Vaccinations for COVID-19")  +
+  scale_x_date(limits= c(
+    first(CleanWeekData 
+          %>% filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States"), 
+                     !is.na(percent_ppl_fully_vacc))%>%pull(date_week)),
+    last(CleanWeekData 
+         %>% filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States"),
+                    !is.na(percent_ppl_fully_vacc))%>%pull(date_week))),  date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+    guide = guide_axis(angle = 60))
+
+
+ggsave("~/HBSP/Covid_19_Project/Heri Folder/Vaccinations1.png", width = 11, height = 5.5) 
+
+#ggsave("~/Desktop/covid-deaths-image.png", width = 11, heigh = 5.5) 
+
+# at least one dose 
+CleanWeekData %>%
+  filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States")) %>% 
+  ggplot() + 
+  geom_point(aes(x = date_week, y = percent_ppl_vacc, color = location),
+             size = 3, na.rm = TRUE) + 
+  xlab("Date") + ylab("Percent People with only one dose") + 
+  geom_smooth(aes(x = date_week, y = percent_ppl_vacc, color = location), se = F) + 
+  #scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
+  #            guide = guide_axis(angle = 45)) +   
+  ggtitle("Weekly Vaccinations for COVID-19")  +
+  scale_x_date(limits= c(
+    first(CleanWeekData 
+          %>% filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States"), 
+                     !is.na(percent_ppl_vacc))%>%pull(date_week)),
+    last(CleanWeekData 
+         %>% filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States"),
+                    !is.na(percent_ppl_vacc))%>%pull(date_week))),  date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+    guide = guide_axis(angle = 60)) 
+
+ggsave("~/HBSP/Covid_19_Project/Heri Folder/Vaccinations2.png", width = 11, height = 5.5) 
+
+
+
+#fully vaccinated 
+CleanWeekData %>% 
+  filter(location %in% c("Canada", "Italy", "Europe", "United Kingdom", "India", "United States")) %>%  
+  ggplot() + 
+  geom_point(aes(x = percent_ppl_fully_vacc, y = new_cases_per_100k, color = location), size = 3, na.rm = TRUE) + 
+  xlab("Percent of People Fully Vaccinated") + ylab("New Cases per 100k") + 
+  geom_smooth(aes(x = percent_ppl_fully_vacc, y = new_cases_per_100k, color=location), span = 0.5,se = FALSE) + 
+  ggtitle("Weekly Vaccinations for COVID-19") 
+
+ggsave("~/HBSP/Covid_19_Project/Heri Folder/CasvVax1.png", width = 11, height = 5.5) 
+
+#At least one dose 
+CleanWeekData %>% 
+  filter(location %in% c("Canada", "Italy", "Europe", "United Kingdom", "India", "United States")) %>%  
+  ggplot() + 
+  geom_point(aes(x = percent_ppl_vacc, y = new_cases_per_100k, color = location), size = 3, na.rm = TRUE) + 
+  xlab("Percent of People Vaccinated with only one dose") + ylab("New Cases per 100k") + 
+  geom_smooth(aes(x = percent_ppl_vacc, y = new_cases_per_100k, color=location), span = 0.5,se = FALSE) + 
+  ggtitle("Weekly Vaccinations for COVID-19") 
+
+ggsave("~/HBSP/Covid_19_Project/Heri Folder/CasvVax2.png", width = 11, height = 5.5) 
+
+
+# fully_vaccinated
+CleanWeekData %>%
+  filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States")) %>% 
+  ggplot() + 
+  geom_point(aes(x = date_week, y = new_cases_per_100k, color = location),
+             size = 3, na.rm = TRUE) + 
+  xlab("Date") + ylab("New Weekly Cases per 100k") + 
+  geom_smooth(aes(x = date_week, y = new_cases_per_100k, color = location), se = F, span =0.1) + 
+  #scale_x_date(date_breaks = "8 weeks", date_minor_breaks = "4 weeks", 
+  #            guide = guide_axis(angle = 45)) +   
+  ggtitle("New Weekly Cases for COVID-19 over time")  +
+  scale_x_date(limits= c(
+    first(CleanWeekData 
+          %>% filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States"), 
+                     !is.na(new_cases_per_100k))%>%pull(date_week)),
+    last(CleanWeekData 
+         %>% filter(location %in% c("Canada","Italy", "Europe", "United Kingdom", "India", "United States"),
+                    !is.na(new_cases_per_100k))%>%pull(date_week))),  date_labels = "%B/%d", breaks = scales::pretty_breaks(n = 20), 
+    guide = guide_axis(angle = 60))
+
+
+ggsave("~/HBSP/Covid_19_Project/Heri Folder/Weekly_Cases.png", width = 11, height = 5.5)
+
 
 
 library(shiny)
@@ -122,6 +219,7 @@ server = function(input, output){
       scale_colour_manual(values=c("seagreen3", "purple2")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   }
+
   )
   output$CasesVax = renderPlot( {
     ggplot(CleanWeekData %>%  
@@ -135,6 +233,7 @@ server = function(input, output){
       scale_colour_manual(values=c("blue3", "gold")) +
       labs(color = "") + theme_bw() +  facet_wrap(location~ .)
   }
+
   )
   output$percentChangeVax = renderPlot({
     ggplot(
